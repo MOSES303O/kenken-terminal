@@ -2,12 +2,37 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>kenken-terminal</title>
+    <title>KenKen Terminal</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: #111; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      KenKen WASM module — loaded before React so window.KenKenModule
+      is available when wasmBridge.ts calls it.
+      This script is a no-op until you run: make wasm && cp build/kenken.{js,wasm} public/
+    -->
+    <script>
+      // Guard: only load if the file exists (avoids 404 noise in dev)
+      fetch('/kenken.js', { method: 'HEAD' })
+        .then(res => {
+          if (res.ok) {
+            const s = document.createElement('script');
+            s.src = '/kenken.js';
+            s.onload = () => console.log('[KenKen] WASM script loaded');
+            document.head.appendChild(s);
+          } else {
+            console.info('[KenKen] No WASM build found, using TypeScript engine');
+          }
+        })
+        .catch(() => {
+          console.info('[KenKen] WASM not available');
+        });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
